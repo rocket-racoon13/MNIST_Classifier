@@ -42,6 +42,8 @@ if __name__ == "__main__":
     loss_func = nn.CrossEntropyLoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr)
     
+    print(model.summary())
+    
     # train
     trainer = Trainer(
         train_ds=mnist_train,
