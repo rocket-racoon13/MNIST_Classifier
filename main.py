@@ -1,3 +1,5 @@
+import argparse
+
 import torch
 import torch.nn as nn
 
@@ -19,6 +21,33 @@ lr = 1e-3
 
 
 if __name__ == "__main__":
+    
+    parser = argparse.ArgumentParser()
+    
+    parser.add_argument('--seed', type=int, default=77)
+    parser.add_argument('--data_dir', type=str, default='data/mnist')
+    parser.add_arumgnet('--model_dir', type=str)
+    
+    parser.add_argument('--img_width', type=int, default=28)
+    parser.add_argument('--img_height', type=int, default=28)
+    parser.add_argument('--img_channel', type=int, default=1)
+    parser.add_argument('--conv_channels', type=list, default=[32, 64])
+    parser.add_argument('--fc_dims', type=list, default=[128])
+    
+    parser.add_argument('--num_epochs', type=int, default=10)
+    parser.add_argument('--train_batch_size', type=int, default=10)
+    parser.add_argument('--test_batch_size', type=int, default=50)
+    parser.add_argument('--learning_rate', type=float, default=1e-3)
+    parser.add_argument('--optimizer')
+    parser.add_argument('--scheduler')
+    
+    parser.add_argument('--logging_steps', type=int, default=200)
+    parser.add_argument('--model_save_steps', type=int, default=200)
+    
+    parser.add_argument('--train', action="store")
+    parser.add_argument('--test', action="store")
+    
+    args = parser.parse_args()
     
     # set random seed
     torch.manual_seed(random_seed)
