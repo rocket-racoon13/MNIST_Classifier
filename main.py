@@ -17,7 +17,8 @@ if __name__ == "__main__":
     
     parser.add_argument('--seed', type=int, default=77)
     parser.add_argument('--data_dir', type=str, default='data/mnist')
-    parser.add_arumgnet('--ckpt_dir', type=str, default='model/ckpt')
+    parser.add_arumgnet('--model_dir', type=str, default='model/ckpt')
+    parser.add_argument('--log_dir', type=str, default="model/log")
     parser.add_argument('--model_name', type=str, default='best-model.ckpt')
     
     parser.add_argument('--img_width', type=int, default=28)
@@ -38,11 +39,18 @@ if __name__ == "__main__":
     
     parser.add_argument('--train', action="store")
     parser.add_argument('--test', action="store")
+    parser.add_argument('--no_cuda', action="store")
     
     args = parser.parse_args()
     
     # set random seed
     torch.manual_seed(args.seed)
+    
+    # set device
+    if torch.cuda.is_available() and not args.no_cuda:
+        device = torch.device('cuda:0')
+    else:
+        device = torch.device('cpu')
     
     # load and normalize dataset
     def image_transform(image_np):
@@ -59,7 +67,7 @@ if __name__ == "__main__":
     mnist_test = MNIST("dataset/mnist", train=False, transform=image_transform, target_transform=label_transform)
     
     # create CNN model, loss_func, optimizer
-    model = MNISTClassifierCNN(args)
+    model = MNISTClassifierCNN(args).to(device)
     optimizer = get_optimizer(args)
     
     # Load existing model ckpt
@@ -82,6 +90,7 @@ if __name__ == "__main__":
     # test
     if args.test:
         tester = Tester(
+            args,
             test_ds=mnist_test,
             test_batch_size=test_batch_size,
             model=trainer.model,
