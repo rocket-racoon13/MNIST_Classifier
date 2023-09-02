@@ -5,12 +5,72 @@ import torch.nn as nn
 
 from dataset import MNIST
 from model import MNISTClassifierCNN
-from model.utils import get_optimizer
+from model.utils import get_optimizer, get_scheduler
 from train import *
 from test import *
 from utils import *
 
 
+def main(args):
+    use_cuda = not args.no_cuda and torch.cuda.is_available()
+    device = torch.device("gpu") if use_cuda else torch.device("cpu")
+    
+    set_seed(args)
+    
+    # load and normalize dataset
+    def image_transform(image_np):
+        output = to_tensor(image_np, normalize=True)
+        # output = output.reshape(output.size(0), -1) # ANN용 reshaper
+        output = normalize(output, 0.5, 0.5) # normalize to [-1.0, 1.0] range
+        return output
+    
+    def label_transform(label_np):
+        output = to_tensor(label_np, normalize=False, dtype=torch.int64)
+        return output
+        
+    mnist_train = MNIST("dataset/mnist", train=True,
+                        transform=image_transform, target_transform=label_transform)
+    mnist_test = MNIST("dataset/mnist", train=False,
+                       transform=image_transform, target_transform=label_transform)
+
+    # create model, optimizer
+    model = MNISTClassifierCNN(args).to(device)
+    optimizer = get_optimizer(args, model)
+    scheduler = get_scheduler(args, optimizer)
+    
+    # load model
+    if args.model_name is not None:
+        ckpt = torch.load(os.path.join(
+            args.model_dir, args.model_name
+        ))
+        model.load_state_dict(ckpt["model_state_dict"])
+        optimizer.load_state_dict(ckpt["optimizer_state_dict"])
+        epoch = ckpt["epoch"]
+    
+    # train
+    if args.train:
+        trainer = Trainer(
+            args,
+            train_ds=mnist_train,
+            test_ds=mnist_test,
+            model=model,
+            optimizer=optimizer,
+            scheduler=scheduler
+        )
+        trainer.train()
+    
+    # test
+    if args.test:
+        tester = Tester(
+            args,
+            test_ds=mnist_test,
+            test_batch_size=test_batch_size,
+            model=trainer.model,
+            loss_func=trainer.loss_func,
+            optimizer=trainer.optimizer)
+        tester.test()
+    
+    
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
@@ -42,60 +102,5 @@ if __name__ == "__main__":
     parser.add_argument('--no_cuda', action="store")
     
     args = parser.parse_args()
-    
-    # set random seed
-    torch.manual_seed(args.seed)
-    
-    # set device
-    if torch.cuda.is_available() and not args.no_cuda:
-        device = torch.device('cuda:0')
-    else:
-        device = torch.device('cpu')
-    
-    # load and normalize dataset
-    def image_transform(image_np):
-        output = to_tensor(image_np, normalize=True)
-        # output = output.reshape(output.size(0), -1) # ANN용 reshaper
-        output = normalize(output, 0.5, 0.5) # normalize to [-1.0, 1.0] range
-        return output
-    
-    def label_transform(label_np):
-        output = to_tensor(label_np, normalize=False, dtype=torch.int64)
-        return output
-        
-    mnist_train = MNIST("dataset/mnist", train=True, transform=image_transform, target_transform=label_transform)
-    mnist_test = MNIST("dataset/mnist", train=False, transform=image_transform, target_transform=label_transform)
-    
-    # create CNN model, loss_func, optimizer
-    model = MNISTClassifierCNN(args).to(device)
-    optimizer = get_optimizer(args)
-    
-    # Load existing model ckpt
-    if args.model_name:
-        checkpoint = torch.load(os.path.join(args.model_dir, args.model_name))
-        model.load_state_dict(checkpoint["model_state_dict"])
-        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
-        epoch = checkpoint["epoch"]
-    
-    # train
-    if args.train:
-        trainer = Trainer(
-            args,
-            train_ds=mnist_train,
-            test_ds=mnist_test,
-            model=model,
-            optimizer=optimizer)
-        trainer.train()
-    
-    # test
-    if args.test:
-        tester = Tester(
-            args,
-            test_ds=mnist_test,
-            test_batch_size=test_batch_size,
-            model=trainer.model,
-            loss_func=trainer.loss_func,
-            optimizer=trainer.optimizer)
-        tester.test()
     
     
