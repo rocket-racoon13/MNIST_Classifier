@@ -2,55 +2,92 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from model.utils import LinearLayer
+
 
 class MNISTClassifierANN(torch.nn.Module):
     
-    def __init__(self, in_features, out_features):
+    def __init__(self, args):
         super().__init__()
         
-        self.fc1 = nn.Linear(in_features, 120)
-        self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, out_features)
+        self.args = args
+        self.fc_module = nn.ModuleList()
+        
+        # define fc module
+        in_features = self.args.image_height * self.args.image_width
+        for fc_dim in self.args.fc_dims:
+            fc_layer = nn.Linear(
+                in_features=in_features,
+                out_features=fc_dim
+            )
+            self.fc_module.append(fc_layer)
+            self.fc_module.append(nn.ReLU())
+            in_features = fc_dim
+            
+        out_layer = nn.Linear(
+            in_features=self.fc_module[-2].out_features,
+            out_features=self.args.num_labels
+        )
+        
         
     def forward(self, x):
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
+        x = self.fc_module(x)
         
         return x
         
         
 class MNISTClassifierCNN(torch.nn.Module):
     
-    def __init__(self, in_channels, out_features):
+    def __init__(self, args):
         super().__init__()
         
-        # First Layer
-        # ImgIn shape = (?, 28, 28, 1)
-        #       Conv -> (?, 28, 28, 32)
-        #       Pool -> (?, 14, 14, 32)
-        self.conv1 = nn.Sequential(
-            nn.Conv2d(in_channels, 32, kernel_size=3, stride=1, padding=1), # 32 filters -> resulting size = (28+1*2-3)/1+1, (28+1*2-3)/1+1, 32 = (28,28,32)
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2) # (32,28,28) -> (28-2)/2+1, (28-2)/2+1 = (14,14,32)
+        self.args = args
+        self.conv_module = nn.ModuleList()
+        self.fc_module = nn.ModuleList()
+        self.dropout = nn.Dropout(
+            p=self.args.dropout_rate
         )
-        # Second Layer
-        # ImgIn shape = (?, 14, 14, 32)
-        #       Conv -> (?, 14, 14, 64)
-        #       Pool -> (?,  7,  7, 64)
-        self.conv2 = nn.Sequential(
-            nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2)
+        
+        # define convolution module
+        in_channel = self.args.image_channel
+        for conv_channel in self.args.conv_channels:
+            conv_layer = nn.Conv2d(
+                in_channels=in_channel,
+                out_channels=conv_channel,
+                kernel_size=self.args.kernel_size,
+                stride=self.args.stride,
+                padding=self.args.padding
+            )
+            self.conv_module.append(conv_layer)
+            self.conv_module.append(nn.ReLU())
+            in_channel = conv_channel
+            
+        # define fc module
+        conv_in_size = self.conv_module[-2].in_channels
+        conv_out_size = int((conv_in_size + 2 * self.args.padding\
+            - self.args.kernel_size) / self.args.stride + 1)
+        in_features = conv_out_size * conv_out_size * self.conv_module[-2].out_channels
+        
+        for fc_dim in self.args.fc_dims:
+            fc_layer = nn.Linear(
+                in_features=in_features,
+                out_features=fc_dim
+            )
+            self.fc_module.append(fc_layer)
+            self.fc_module.append(nn.ReLU())
+            in_features = fc_dim
+            
+        out_layer = nn.Linear(
+            in_features=self.fc_module[-2].out_feautres,
+            out_features=self.args.num_labels
         )
-        self.fc1 = nn.Linear(7*7*64, 128)
-        self.fc2 = nn.Linear(128, out_features)
+        self.fc_module.append(out_layer)
+        
         
     def forward(self, x):
-        x = self.conv1(x)
-        x = self.conv2(x)
+        x = self.conv_module(x)
         x = x.reshape(x.size(0), -1)
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
+        x = self.dropout(x)
+        x = self.fc_module(x)
         
         return x

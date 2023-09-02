@@ -1,23 +1,25 @@
 from tqdm import tqdm
+
 import torch
+import torch.nn as nn
 from torch.utils.data import DataLoader
 
 
 class Tester:
     def __init__(
         self,
+        args,
         test_ds,
-        test_batch_size,
         model,
-        loss_func,
         optimizer
-    ):
-        self.test_ds = test_ds
+    ):  
+        self.args = args
         
-        self.test_batch_size = test_batch_size
+        self.test_ds = test_ds
+        self.test_batch_size = args.test_batch_size
         
         self.model = model
-        self.loss_func = loss_func
+        self.loss_func = nn.CrossEntropyLoss()
         self.optimizer = optimizer
         
         self.records = {

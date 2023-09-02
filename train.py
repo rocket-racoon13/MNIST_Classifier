@@ -14,7 +14,8 @@ class Trainer:
         train_ds,
         test_ds,
         model,
-        optimizer
+        optimizer,
+        scheduler
     ):
         self.args = args
         self.train_ds = train_ds
@@ -23,6 +24,7 @@ class Trainer:
         self.model = model
         self.loss_func = nn.CrossEntropyLoss()
         self.optimizer = optimizer
+        self.scheduler = scheduler
         
         self.steps = 0
         self.train_writer = SummaryWriter(log_dir=os.path.join(args.log_dir, 'train'))
@@ -39,7 +41,7 @@ class Trainer:
             }
         }
     
-    def update_tensorboard(self, loss, acc, epoch, mode="train"):
+    def update_tensorboard(self, loss, acc, epoch=0, mode="train"):
         if mode == "train":
             self.train_writer.add_scalar("Loss/train", loss, self.steps)
             self.train_writer.add_scalar("Accuracy/train", acc, self.steps)
