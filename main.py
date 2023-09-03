@@ -55,7 +55,8 @@ def main(args):
             test_ds=mnist_test,
             model=model,
             optimizer=optimizer,
-            scheduler=scheduler
+            scheduler=scheduler,
+            device=device
         )
         trainer.train()
     
@@ -65,7 +66,8 @@ def main(args):
             args,
             test_ds=mnist_test,
             model=model,
-            optimizer=optimizer
+            optimizer=optimizer,
+            device=device
         )
         tester.test()
         

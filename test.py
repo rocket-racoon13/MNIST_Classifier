@@ -11,13 +11,15 @@ class Tester:
         args,
         test_ds,
         model,
-        optimizer
+        optimizer,
+        device
     ):  
         self.args = args
         
         self.test_ds = test_ds
         self.test_batch_size = args.test_batch_size
         
+        self.device = device
         self.model = model
         self.loss_func = nn.CrossEntropyLoss()
         self.optimizer = optimizer

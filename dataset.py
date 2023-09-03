@@ -104,3 +104,7 @@ class StandardTransform:
         if self.target_transform is not None:
             target = self.target_transform(target)
         return input, target
+    
+    
+def collate_fn(samples):
+    pass

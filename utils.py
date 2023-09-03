@@ -15,7 +15,7 @@ def set_seed(args):
 
 def get_device(args):
     use_cuda = not args.no_cuda and torch.cuda.is_available()
-    device = torch.device("gpu") if use_cuda else torch.device("cpu")
+    device = torch.device("cuda") if use_cuda else torch.device("cpu")
     return device
 
 

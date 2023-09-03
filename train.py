@@ -15,12 +15,14 @@ class Trainer:
         test_ds,
         model,
         optimizer,
-        scheduler
+        scheduler,
+        device
     ):
         self.args = args
         self.train_ds = train_ds
         self.test_ds = test_ds
         
+        self.device = device
         self.model = model
         self.loss_func = nn.CrossEntropyLoss()
         self.optimizer = optimizer
@@ -48,6 +50,7 @@ class Trainer:
         self.model.eval() # nullify dropout
         with torch.no_grad():
             for step, (img, label) in enumerate(test_loader, 1):
+                img = img.to(self.device)
                 y_pred = self.model(img)
                 _, predicted = torch.max(y_pred, dim=1)
                 test_corr_cnt += (predicted == label).sum()
