@@ -13,6 +13,12 @@ def set_seed(args):
         torch.cuda.manual_seed_all(args.seed)
 
 
+def get_device(args):
+    use_cuda = not args.no_cuda and torch.cuda.is_available()
+    device = torch.device("gpu") if use_cuda else torch.device("cpu")
+    return device
+
+
 def to_tensor(
     input: np.ndarray,
     normalize: bool = True,

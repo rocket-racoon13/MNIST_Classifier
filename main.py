@@ -5,6 +5,7 @@ import torch.nn as nn
 
 from train import *
 from test import *
+from predict import *
 from utils import *
 from dataset import MNIST
 from model import MNISTClassifierCNN
@@ -12,9 +13,7 @@ from models.utils import get_optimizer, get_scheduler
 
 
 def main(args):
-    use_cuda = not args.no_cuda and torch.cuda.is_available()
-    device = torch.device("gpu") if use_cuda else torch.device("cpu")
-    
+    device = get_device(args)
     set_seed(args)
     
     # load and normalize dataset
@@ -69,6 +68,15 @@ def main(args):
             optimizer=optimizer
         )
         tester.test()
+        
+    # predict
+    if args.predict:
+        predictor = Predictor(
+            args,
+            model=model,
+            optimizer=optimizer
+        )
+        predictor.predict()
     
     
 if __name__ == "__main__":
@@ -98,7 +106,7 @@ if __name__ == "__main__":
     parser.add_argument('--test_batch_size', type=int, default=500)
     parser.add_argument('--learning_rate', type=float, default=1e-3)
     parser.add_argument('--optimizer', type=str, default="Adam")
-    parser.add_argument('--scheduler', type=str, default="StepLR")
+    parser.add_argument('--scheduler', type=str, default="lambdaLR")
     parser.add_argument('--dropout_rate', type=float, default=0.5)
     
     parser.add_argument('--logging_steps', type=int, default=200)

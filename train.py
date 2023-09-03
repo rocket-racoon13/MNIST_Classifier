@@ -113,7 +113,7 @@ class Trainer:
                         "optimizer_state_dict": self.optimizer.state_dict()
                     }, os.path.join(self.args.model_dir, "lastest-model.ckpt"))
                 
-            accuracy = 100 * (train_corr_cnt / (step * self.args.train_batch_size))
+            self.scheduler.step()
             
             # validation
             self.valid()
