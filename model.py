@@ -2,8 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from model.utils import LinearLayer
-
 
 class MNISTClassifierANN(torch.nn.Module):
     
@@ -63,10 +61,11 @@ class MNISTClassifierCNN(torch.nn.Module):
             in_channel = conv_channel
             
         # define fc module
-        conv_in_size = self.conv_module[-2].in_channels
-        conv_out_size = int((conv_in_size + 2 * self.args.padding\
-            - self.args.kernel_size) / self.args.stride + 1)
-        in_features = conv_out_size * conv_out_size * self.conv_module[-2].out_channels
+        H_out = int((self.args.image_height + 2 * self.args.padding\
+            - self.args.kernel_size / self.args.stride + 1))
+        W_out = int((self.args.image_width + 2 * self.args.padding\
+            - self.args.kernel_size / self.args.stride + 1))
+        in_features = H_out * W_out * self.conv_module[-2].out_channels
         
         for fc_dim in self.args.fc_dims:
             fc_layer = nn.Linear(
@@ -78,16 +77,18 @@ class MNISTClassifierCNN(torch.nn.Module):
             in_features = fc_dim
             
         out_layer = nn.Linear(
-            in_features=self.fc_module[-2].out_feautres,
+            in_features=self.fc_module[-2].out_features,
             out_features=self.args.num_labels
         )
         self.fc_module.append(out_layer)
         
         
     def forward(self, x):
-        x = self.conv_module(x)
+        for layer in self.conv_module:
+            x = layer(x)
         x = x.reshape(x.size(0), -1)
         x = self.dropout(x)
-        x = self.fc_module(x)
+        for layer in self.fc_module:
+            x = layer(x)
         
         return x

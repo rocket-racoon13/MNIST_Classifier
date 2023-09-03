@@ -8,7 +8,7 @@ from test import *
 from utils import *
 from dataset import MNIST
 from model import MNISTClassifierCNN
-from model.utils import get_optimizer, get_scheduler
+from models.utils import get_optimizer, get_scheduler
 
 
 def main(args):
@@ -78,26 +78,26 @@ if __name__ == "__main__":
     parser.add_argument('--seed', type=int, default=77)
     
     parser.add_argument('--data_dir', type=str, default='dataset/mnist')
-    parser.add_arumgnet('--model_dir', type=str, default='model/ckpt')
-    parser.add_argument('--log_dir', type=str, default="model/log")
-    parser.add_argument('--model_name', type=str, default='best-model.ckpt')
+    parser.add_argument('--model_dir', type=str, default='models/ckpt')
+    parser.add_argument('--log_dir', type=str, default="models/log")
+    parser.add_argument('--model_name', type=str)
     
     parser.add_argument('--num_labels', type=int, default=10)
     parser.add_argument('--image_width', type=int, default=28)
     parser.add_argument('--image_height', type=int, default=28)
     parser.add_argument('--image_channel', type=int, default=1)
     
-    parser.add_argument('--conv_channels', type=list, default=[32, 64])
+    parser.add_argument('--conv_channels', type=list, default=[16, 32])
     parser.add_argument('--fc_dims', type=list, default=[128])
     parser.add_argument('--kernel_size', type=int, default=3)
     parser.add_argument('--stride', type=int, default=1)
     parser.add_argument('--padding', type=int, default=1)
     
-    parser.add_argument('--num_epochs', type=int, default=10)
+    parser.add_argument('--num_epochs', type=int, default=5)
     parser.add_argument('--train_batch_size', type=int, default=100)
     parser.add_argument('--test_batch_size', type=int, default=500)
     parser.add_argument('--learning_rate', type=float, default=1e-3)
-    parser.add_argument('--optimizer', type=str, default="AdamW")
+    parser.add_argument('--optimizer', type=str, default="Adam")
     parser.add_argument('--scheduler', type=str, default="StepLR")
     parser.add_argument('--dropout_rate', type=float, default=0.5)
     

@@ -10,16 +10,20 @@ def get_optimizer(args, model):
         optimizer = optim.Adagrad(model.parameters(), args.learning_rate)
     elif optim_name == "adam":
         optimizer = optim.Adam(model.parameters(), args.learning_rate)
-    elif optim_name == "adamw":
-        optimizer = optim.AdamW(model.parameters(), args.learning_rate)
     elif optim_name == "sgd":
         optimizer = optim.SGD(model.parameters(), args.learning_rate)
-        
+    else:
+        raise NotImplementedError
+    
+    return optimizer
+
         
 def get_scheduler(args, optimizer):
     scheduler_name = args.scheduler.lower()
     
     if scheduler_name == "steplr":
-        pass
+        scheduler = ''
     elif scheduler_name == "cosineannealinglr":
-        pass
+        scheduler = ''
+    
+    return scheduler
