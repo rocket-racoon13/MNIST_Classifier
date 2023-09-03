@@ -14,5 +14,6 @@ def convert_image_to_tensor():
     pass
         
 
-def predict(args, ):
-    pass
+class Predictor:
+    def __init__(self):
+        pass

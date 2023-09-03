@@ -45,7 +45,7 @@ def main(args):
         ))
         model.load_state_dict(ckpt["model_state_dict"])
         optimizer.load_state_dict(ckpt["optimizer_state_dict"])
-        epoch = ckpt["epoch"]
+        steps = ckpt["steps"]
     
     # train
     if args.train:
@@ -88,7 +88,7 @@ if __name__ == "__main__":
     parser.add_argument('--data_dir', type=str, default='dataset/mnist')
     parser.add_argument('--model_dir', type=str, default='models/ckpt')
     parser.add_argument('--log_dir', type=str, default="models/log")
-    parser.add_argument('--model_name', type=str)
+    parser.add_argument('--model_name', type=str, default='best-model.ckpt')
     
     parser.add_argument('--num_labels', type=int, default=10)
     parser.add_argument('--image_width', type=int, default=28)
@@ -105,6 +105,8 @@ if __name__ == "__main__":
     parser.add_argument('--train_batch_size', type=int, default=100)
     parser.add_argument('--test_batch_size', type=int, default=500)
     parser.add_argument('--learning_rate', type=float, default=1e-3)
+    parser.add_argument('--weight_decay', type=float, default=0)
+    parser.add_argument('--eps', type=float, default=1e-8)
     parser.add_argument('--optimizer', type=str, default="Adam")
     parser.add_argument('--scheduler', type=str, default="lambdaLR")
     parser.add_argument('--dropout_rate', type=float, default=0.5)
@@ -114,6 +116,7 @@ if __name__ == "__main__":
     
     parser.add_argument('--train', action="store_true")
     parser.add_argument('--test', action="store_true")
+    parser.add_argument('--predict', action="store_true")
     parser.add_argument('--no_cuda', action="store_true")
     
     args = parser.parse_args()

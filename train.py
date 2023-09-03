@@ -76,7 +76,7 @@ class Trainer:
     
     
     def train(self):
-        self.model.tain()
+        self.model.train()
         
         for epoch in tqdm(range(1, self.args.num_epochs+1)):
             train_corr_cnt = 0
@@ -117,3 +117,8 @@ class Trainer:
             
             # validation
             self.valid()
+            
+        self.train_writer.flush()
+        self.valid_writer.flush()
+        self.train_writer.close()
+        self.valid_writer.close()
