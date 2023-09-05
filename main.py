@@ -7,8 +7,8 @@ import torch.nn as nn
 from dataset import MNIST
 from model_utils import *
 from predict import *
-from train import *
-from test import *
+from trainer import *
+from tester import *
 from utils import *
 
 
