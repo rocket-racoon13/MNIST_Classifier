@@ -2,6 +2,17 @@ import torch
 import torch.optim as optim
 from torch.nn.parameter import Parameter
 
+from model import *
+
+
+def get_model(args):
+    model_type_name = args.model_type.lower()
+    if model_type_name == "ann":
+        model = MNISTClassifierANN(args)
+    elif model_type_name == "cnn":
+        model = MNISTClassifierCNN(args)
+    return model
+    
 
 def get_optimizer(args, model):
     optim_name = args.optimizer.lower()

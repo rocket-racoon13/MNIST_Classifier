@@ -9,7 +9,7 @@ from predict import *
 from utils import *
 from dataset import MNIST
 from model import MNISTClassifierCNN
-from models.utils import get_optimizer, get_scheduler
+from model_utils import *
 
 
 def main(args):
@@ -34,7 +34,7 @@ def main(args):
                        transform=image_transform, target_transform=label_transform)
 
     # create model, optimizer, scheduler
-    model = MNISTClassifierCNN(args).to(device)
+    model = get_model(args).to(device)
     optimizer = get_optimizer(args, model)
     scheduler = get_scheduler(args, optimizer)
     
@@ -76,7 +76,8 @@ def main(args):
         predictor = Predictor(
             args,
             model=model,
-            optimizer=optimizer
+            optimizer=optimizer,
+            device=device
         )
         predictor.predict()
     
@@ -88,15 +89,16 @@ if __name__ == "__main__":
     parser.add_argument('--seed', type=int, default=77)
     
     parser.add_argument('--data_dir', type=str, default='dataset/mnist')
-    parser.add_argument('--model_dir', type=str, default='models/ckpt')
+    parser.add_argument('--ckpt_dir', type=str, default='models/ckpt')
     parser.add_argument('--log_dir', type=str, default="models/log")
-    parser.add_argument('--model_name', type=str, default='best-model.ckpt')
+    parser.add_argument('--ckpt_name', type=str, default='best-model.ckpt')
     
     parser.add_argument('--num_labels', type=int, default=10)
     parser.add_argument('--image_width', type=int, default=28)
     parser.add_argument('--image_height', type=int, default=28)
     parser.add_argument('--image_channel', type=int, default=1)
     
+    parser.add_argument('--model_type', type=str, default="cnn")
     parser.add_argument('--conv_channels', type=list, default=[16, 32])
     parser.add_argument('--fc_dims', type=list, default=[128])
     parser.add_argument('--kernel_size', type=int, default=3)
