@@ -75,7 +75,7 @@ class Trainer:
                 "optimizer_state_dict": self.optimizer.state_dict(),
                 "accuracy": accuracy.item(),
                 "loss": loss.item()
-            }, os.path.join(self.args.model_dir, 'best-model.ckpt'))
+            }, os.path.join(self.args.ckpt_dir, 'best-model.ckpt'))
     
     
     def train(self):
@@ -114,7 +114,7 @@ class Trainer:
                         "steps": step,
                         "model_state_dict": self.model.state_dict(),
                         "optimizer_state_dict": self.optimizer.state_dict()
-                    }, os.path.join(self.args.model_dir, "lastest-model.ckpt"))
+                    }, os.path.join(self.args.ckpt_dir, "lastest-model.ckpt"))
                 
             self.scheduler.step()
             

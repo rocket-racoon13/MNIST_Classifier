@@ -1,4 +1,5 @@
 import argparse
+from datetime import datetime
 
 import torch
 import torch.nn as nn
@@ -12,14 +13,15 @@ from utils import *
 
 
 def config():
+    
     parser = argparse.ArgumentParser()
     
     parser.add_argument('--seed', type=int, default=77)
     
     parser.add_argument('--data_dir', type=str, default='dataset/mnist')
-    parser.add_argument('--ckpt_dir', type=str, default='models/ckpt')
-    parser.add_argument('--log_dir', type=str, default="models/log")
-    parser.add_argument('--ckpt_name', type=str, default='best-model.ckpt')
+    parser.add_argument('--ckpt_dir', type=str, default=f"outputs/{datetime.now().strftime('%Y%m%d_%H-%M-%S')}/ckpt")
+    parser.add_argument('--log_dir', type=str, default=f"outputs/{datetime.now().strftime('%Y%m%d_%H-%M-%S')}/log")
+    parser.add_argument('--ckpt_name', type=str, default="outputs/20230905_22-49-20/ckpt/best-model.ckpt")
     
     parser.add_argument('--num_labels', type=int, default=10)
     parser.add_argument('--image_width', type=int, default=28)
@@ -60,10 +62,17 @@ def main(args):
     device = get_device(args)
     set_seed(args)
     
+    # create dir
+    if args.train:
+        if not os.path.exists(args.ckpt_dir):
+            os.makedirs(args.ckpt_dir, exist_ok=True)
+        if not os.path.exists(args.log_dir):
+            os.makedirs(args.log_dir, exist_ok=True)
+    
     # load and normalize dataset
     def image_transform(image_np):
         output = to_tensor(image_np, normalize=True)
-        # output = output.reshape(output.size(0), -1) # ANN용 reshaper
+        output = output.reshape(output.size(0), -1) # ANN용 reshaper
         output = normalize(output, 0.5, 0.5) # normalize to [-1.0, 1.0] range
         return output
     
@@ -83,10 +92,8 @@ def main(args):
     scheduler = get_scheduler(args, optimizer)
     
     # load model
-    if args.model_name is not None:
-        ckpt = torch.load(os.path.join(
-            args.model_dir, args.model_name
-        ))
+    if args.ckpt_name is not None:
+        ckpt = torch.load(args.ckpt_name)
         model.load_state_dict(ckpt["model_state_dict"])
         optimizer.load_state_dict(ckpt["optimizer_state_dict"])
         steps = ckpt["steps"]

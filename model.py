@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from model_utils import LinearLayer
+from linear import LinearLayer
 
 
 class MNISTClassifierANN(torch.nn.Module):
@@ -29,7 +29,7 @@ class MNISTClassifierANN(torch.nn.Module):
             in_features = fc_dim
             
         out_layer = LinearLayer(
-            in_features=self.fc_module[-2].out_features,
+            in_features=self.fc_module[-3].out_features,
             out_features=self.args.num_labels
         )
         self.fc_module.append(out_layer)
