@@ -4,9 +4,10 @@ from datetime import datetime
 import torch
 import torch.nn as nn
 
-from dataset import MNIST
+from dataset import *
+from data_utils import *
 from model_utils import *
-from predict import *
+from predictor import *
 from trainer import *
 from tester import *
 from utils import *
@@ -19,6 +20,8 @@ def config():
     parser.add_argument('--seed', type=int, default=77)
     
     parser.add_argument('--data_dir', type=str, default='dataset/mnist')
+    parser.add_argument('--eval_data_dir', type=str, default='dataset/eval')
+    parser.add_argument('--eval_out_dir', type=str, default='outputs/eval')
     parser.add_argument('--ckpt_dir', type=str, default=f"outputs/{datetime.now().strftime('%Y%m%d_%H-%M-%S')}/ckpt")
     parser.add_argument('--log_dir', type=str, default=f"outputs/{datetime.now().strftime('%Y%m%d_%H-%M-%S')}/log")
     parser.add_argument('--ckpt_name', type=str, default="outputs/20230905_22-49-20/ckpt/best-model.ckpt")
@@ -64,29 +67,26 @@ def main(args):
     
     set_seed(args)
     
-    # create dir
     if args.train:
+        # create dir
         if not os.path.exists(args.ckpt_dir):
             os.makedirs(args.ckpt_dir, exist_ok=True)
         if not os.path.exists(args.log_dir):
             os.makedirs(args.log_dir, exist_ok=True)
     
-    # load and normalize dataset
-    def image_transform(image_np):
-        output = to_tensor(image_np, normalize=True)
-        output = output.reshape(output.size(0), -1) # ANN용 reshaper
-        output = normalize(output, 0.5, 0.5) # normalize to [-1.0, 1.0] range
-        return output
-    
-    def label_transform(label_np):
-        output = to_tensor(label_np, normalize=False, dtype=torch.int64)
-        return output
-    
-    # load dataset
-    mnist_train = MNIST("dataset/mnist", train=True,
+        mnist_train = MNIST("dataset/mnist", train=True,
+                            transform=image_transform, target_transform=label_transform)
+        
+    if args.test:
+        mnist_test = MNIST("dataset/mnist", train=False,
                         transform=image_transform, target_transform=label_transform)
-    mnist_test = MNIST("dataset/mnist", train=False,
-                       transform=image_transform, target_transform=label_transform)
+        
+    if args.predict:
+        eval_ds = EvalDataset(
+            args=args,
+            root=args.eval_data_dir,
+            transform=eval_transform
+        )
 
     # create model, optimizer, scheduler
     model = get_model(args).to(device)
@@ -99,6 +99,7 @@ def main(args):
         model.load_state_dict(ckpt["model_state_dict"])
         optimizer.load_state_dict(ckpt["optimizer_state_dict"])
         steps = ckpt["steps"]
+        print(f"=== {args.ckpt_name} -> LOAD COMPLETE ===")
     
     # train
     if args.train:
@@ -128,8 +129,8 @@ def main(args):
     if args.predict:
         predictor = Predictor(
             args,
+            eval_ds=eval_ds,
             model=model,
-            optimizer=optimizer,
             device=device
         )
         predictor.predict()
