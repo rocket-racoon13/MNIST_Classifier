@@ -75,10 +75,10 @@ class MNISTClassifierCNN(torch.nn.Module):
             in_channel = conv_channel
             
         # define fc module
-        H_out = int((self.args.image_height + 2 * self.args.padding\
-            - self.args.kernel_size / self.args.stride + 1))
-        W_out = int((self.args.image_width + 2 * self.args.padding\
-            - self.args.kernel_size / self.args.stride + 1))
+        H_out = int((self.args.image_height + 2 * self.args.padding[-1]\
+            - self.args.kernel_size[-1] / self.args.stride[-1] + 1))
+        W_out = int((self.args.image_width + 2 * self.args.padding[-1]\
+            - self.args.kernel_size[-1] / self.args.stride[-1] + 1))
         in_features = H_out * W_out * self.conv_module[-2].out_channels
         
         for fc_dim in self.args.fc_dims:

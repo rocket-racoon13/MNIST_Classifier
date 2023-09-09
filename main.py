@@ -8,8 +8,8 @@ from dataset import *
 from data_utils import *
 from model_utils import *
 from predictor import *
-from trainer import *
 from tester import *
+from trainer import *
 from utils import *
 
 
@@ -24,14 +24,14 @@ def config():
     parser.add_argument('--eval_out_dir', type=str, default='outputs/eval')
     parser.add_argument('--ckpt_dir', type=str, default=f"outputs/{datetime.now().strftime('%Y%m%d_%H-%M-%S')}/ckpt")
     parser.add_argument('--log_dir', type=str, default=f"outputs/{datetime.now().strftime('%Y%m%d_%H-%M-%S')}/log")
-    parser.add_argument('--ckpt_name', type=str, default="outputs/20230905_22-49-20/ckpt/best-model.ckpt")
+    parser.add_argument('--ckpt_name', type=str, default="outputs/20230910_02-13-16/ckpt/best-model.ckpt")
     
     parser.add_argument('--num_labels', type=int, default=10)
     parser.add_argument('--image_width', type=int, default=28)
     parser.add_argument('--image_height', type=int, default=28)
     parser.add_argument('--image_channel', type=int, default=1)
     
-    parser.add_argument('--model_type', type=str, default="ann")
+    parser.add_argument('--model_type', type=str, default="cnn")
     parser.add_argument('--conv_channels', type=list, default=[16, 32])
     parser.add_argument('--fc_dims', type=list, default=[128, 256])
     parser.add_argument('--kernel_size', type=int, default=[3, 3])
@@ -74,10 +74,9 @@ def main(args):
         if not os.path.exists(args.log_dir):
             os.makedirs(args.log_dir, exist_ok=True)
     
+    if args.train or args.test:
         mnist_train = MNIST("dataset/mnist", train=True,
                             transform=image_transform, target_transform=label_transform)
-        
-    if args.test:
         mnist_test = MNIST("dataset/mnist", train=False,
                         transform=image_transform, target_transform=label_transform)
         

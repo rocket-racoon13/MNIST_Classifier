@@ -23,7 +23,7 @@ def read_and_convert_image_to_pt(image_dir) -> torch.Tensor:
 
 def image_transform(image_np):
     output = to_tensor(image_np, normalize=True)
-    output = output.reshape(output.size(0), -1) # ANN용 reshaper
+    # output = output.reshape(output.size(0), -1)
     output = normalize(output, 0.5, 0.5) # normalize to [-1.0, 1.0] range
     return output
 
@@ -34,13 +34,13 @@ def label_transform(label_np):
 
 
 def eval_transform(args, image_dir):
-    
     resizer = transforms.Resize((args.image_height, args.image_width))
     grayscaler = transforms.Grayscale(args.image_channel)
     
     image_pt = read_and_convert_image_to_pt(image_dir)
     image_pt = resizer(image_pt)
     image_pt = grayscaler(image_pt) if image_pt.size(0) == 3 else image_pt
+    image_pt = 255 - image_pt   # invert background color # https://medium.com/@krishna.ramesh.tx/training-a-cnn-to-distinguish-between-mnist-digits-using-pytorch-620f06aa9ffa
     image_pt = normalize(image_pt / 255, 0.5, 0.5)
     if args.model_type.lower() == "ann":
         image_pt = image_pt.flatten()
