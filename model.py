@@ -56,13 +56,19 @@ class MNISTClassifierCNN(torch.nn.Module):
         
         # define convolution module
         in_channel = self.args.image_channel
-        for conv_channel in self.args.conv_channels:
+        for (conv_channel, kernel_size, stride, padding) in\
+            zip(
+                self.args.conv_channels,
+                self.args.kernel_size,
+                self.args.stride,
+                self.args.padding
+            ):
             conv_layer = nn.Conv2d(
                 in_channels=in_channel,
                 out_channels=conv_channel,
-                kernel_size=self.args.kernel_size,
-                stride=self.args.stride,
-                padding=self.args.padding
+                kernel_size=kernel_size,
+                stride=stride,
+                padding=padding
             )
             self.conv_module.append(conv_layer)
             self.conv_module.append(nn.ReLU())

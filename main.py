@@ -31,9 +31,9 @@ def config():
     parser.add_argument('--model_type', type=str, default="ann")
     parser.add_argument('--conv_channels', type=list, default=[16, 32])
     parser.add_argument('--fc_dims', type=list, default=[128, 256])
-    parser.add_argument('--kernel_size', type=int, default=3)
-    parser.add_argument('--stride', type=int, default=1)
-    parser.add_argument('--padding', type=int, default=1)
+    parser.add_argument('--kernel_size', type=int, default=[3, 3])
+    parser.add_argument('--stride', type=int, default=[1, 1])
+    parser.add_argument('--padding', type=int, default=[1, 1])
     
     parser.add_argument('--num_epochs', type=int, default=5)
     parser.add_argument('--train_batch_size', type=int, default=100)
@@ -60,6 +60,8 @@ def config():
 
 def main(args):
     device = get_device(args)
+    print(f"=== Device Type: {device} ===")
+    
     set_seed(args)
     
     # create dir
@@ -93,7 +95,7 @@ def main(args):
     
     # load model
     if args.ckpt_name is not None:
-        ckpt = torch.load(args.ckpt_name)
+        ckpt = torch.load(args.ckpt_name, map_location=device)
         model.load_state_dict(ckpt["model_state_dict"])
         optimizer.load_state_dict(ckpt["optimizer_state_dict"])
         steps = ckpt["steps"]

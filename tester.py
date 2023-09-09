@@ -34,14 +34,16 @@ class Tester:
         test_loader = DataLoader(self.test_ds, self.test_batch_size, shuffle=False)
         
         with torch.no_grad():
-            for batch_idx, (img, label) in enumerate(test_loader, 1):
+            for step, batch in enumerate(test_loader, 1):
+                batch = [b.to(self.device) for b in batch]
+                img, label = batch
                 y_pred = self.model(img)
                 _, predicted = torch.max(y_pred, dim=1)
-                test_corr_cnt += (predicted == label).sum()
+                test_corr_cnt += (predicted == label).sum().detach().cpu()
                 
         loss = self.loss_func(y_pred, label)
-        self.records["Loss"] = loss
-        accuracy = 100 * (test_corr_cnt / (batch_idx * self.test_batch_size))
+        self.records["Loss"] = loss.detach().cpu().item()
+        accuracy = 100 * (test_corr_cnt / (step * self.test_batch_size))
         self.records["Accuracy"] = accuracy
         
         print(f"Test Accuracy: {test_corr_cnt.item()*100/len(self.test_ds):2.4f}%")

@@ -49,17 +49,18 @@ class Trainer:
         
         self.model.eval() # nullify dropout
         with torch.no_grad():
-            for step, (img, label) in enumerate(test_loader, 1):
-                img = img.to(self.device)
+            for step, batch in enumerate(test_loader, 1):
+                batch = [b.to(self.device) for b in batch]
+                img, label = batch
                 y_pred = self.model(img)
                 _, predicted = torch.max(y_pred, dim=1)
-                test_corr_cnt += (predicted == label).sum()
+                test_corr_cnt += (predicted == label).sum().detach().cpu()
                 
         loss = self.loss_func(y_pred, label)
         accuracy = 100 * (test_corr_cnt / (step * self.args.test_batch_size))
         
         self.update_tensorboard(
-            loss=loss.item(),
+            loss=loss.detach().cpu().item(),
             acc=accuracy.item(),
             mode="valid"
         )
@@ -85,12 +86,14 @@ class Trainer:
             train_corr_cnt = 0
             train_loader = DataLoader(self.train_ds, self.args.train_batch_size, shuffle=True)
             
-            for step, (img, label) in enumerate(train_loader, 1):
+            for step, batch in enumerate(train_loader, 1):
+                batch = [b.to(self.device) for b in batch]
+                img, label = batch
                 y_pred = self.model(img)
                 loss = self.loss_func(y_pred, label)
                 
                 _, prediction = torch.max(y_pred, dim=1)
-                train_corr_cnt += (prediction == label).sum()
+                train_corr_cnt += (prediction == label).sum().detach().cpu()
                 
                 self.optimizer.zero_grad()
                 loss.backward()
@@ -102,7 +105,7 @@ class Trainer:
                     print(f"Epoch:{epoch:2d} Batch:{step:2d} Loss:{loss:4.4f} Accuracy:{acc:4.4f}%")
                     
                     self.update_tensorboard(
-                        loss=loss.item(),
+                        loss=loss.detach().cpu().item(),
                         acc=acc.item(),
                         mode="train"
                     )
