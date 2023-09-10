@@ -10,6 +10,7 @@ from utils import *
 def read_and_convert_image_to_pt(image_dir) -> torch.Tensor:
     """
     Loads an image with PIL and converts to torch.Tensor in the CHW sequence.
+    If the image is in the RGBA format, the alpha channel is deleted.
     """
     image = Image.open(image_dir)
     image_pt = torch.as_tensor(np.array(image, copy=True))   # HWC
@@ -46,3 +47,31 @@ def eval_transform(args, image_dir):
         image_pt = image_pt.flatten()
     
     return image_pt
+
+
+def custom_collate_fn(desired_height, desired_width, image_pt, pad_mode="right"):
+    """
+    If the size of input image (image_pt) is smaller than the desired size,
+    return a padded image in the desired size.
+    """
+    # desired_height = args.image_height
+    # desired_width = args.image_width
+    c, h, w = image_pt.size()
+    
+    if h == desired_height and w == desired_width:
+        return image_pt
+    
+    padded_img = torch.FloatTensor(c, desired_height, desired_width).fill_(0)
+    height_pad = (desired_height - h) // 2
+    width_pad = (desired_width - h) // 2
+    
+    if pad_mode == "right":
+        padded_img[:, height_pad:(desired_height-height_pad), :w] = image_pt
+        
+    elif pad_mode == "left":
+        padded_img[:, height_pad:(desired_height-height_pad), w:] = image_pt
+        
+    elif pad_mode == "center":
+        padded_img[:, height_pad:(desired_height-height_pad), width_pad:(desired_width-width_pad)] = image_pt
+    
+    return padded_img
